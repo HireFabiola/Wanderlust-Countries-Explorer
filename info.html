@@ -35,7 +35,26 @@
         </div>
     </header>
 
-    <main id="onLoadLayout"></main>
+    <main id="onLoadLayout">  <div class="container">
+    <form id="searchForm" class="mb-3 position-relative">
+      <input id="searchField" class="form-control" placeholder="Search a country...">
+      <div id="countrySuggestions" class="list-group position-absolute w-100"></div>
+    </form>
+
+    <select id="regionFilter" class="form-select mb-3">
+      <option value="">All regions</option>
+      <option value="africa">Africa</option>
+      <option value="americas">Americas</option>
+      <option value="asia">Asia</option>
+      <option value="europe">Europe</option>
+      <option value="oceania">Oceania</option>
+    </select>
+
+    <div id="travelCounter" class="mb-3"></div>
+    <div id="visitedFilterContainer" class="mb-3"></div>
+    <div id="visitedWorldMap" class="mb-4"></div>
+    <div id="countryFlags" class="row g-3"></div>
+  </div></main>
     <div id="newLayout" class="d-none"></div>
 </body>
 
