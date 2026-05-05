@@ -398,25 +398,25 @@ function renderVisitedWorldMap(countries: Country[]): void {
     mapContainer.innerHTML = "";
 
     // ===== Travel Header =====
-const header = document.createElement("h4");
-header.classList.add("text-center", "fw-bold", "mb-1");
-header.textContent = "✈️ WanderLust Map";
+    const header = document.createElement("h4");
+    header.classList.add("text-center", "fw-bold", "mb-1");
+    header.textContent = "✈️ WanderLust Map";
 
-// ===== Dynamic Message =====
-const message = document.createElement("p");
-message.classList.add("text-center", "text-muted", "mb-2");
+    // ===== Dynamic Message =====
+    const message = document.createElement("p");
+    message.classList.add("text-center", "text-muted", "mb-2");
 
-if (!user) {
-    message.textContent = "Log in to start tracking your adventures.";
-} else if (user.visitedCountries.length === 0) {
-    message.textContent = "Your journey starts here — mark your first destination!";
-} else {
-    message.textContent = "Look at you go! Your journey is lighting up the world one country at a time.";
-}
+    if (!user) {
+        message.textContent = "Log in to start tracking your adventures.";
+    } else if (user.visitedCountries.length === 0) {
+        message.textContent = "Your journey starts here — mark your first destination!";
+    } else {
+        message.textContent = "Look at you go! Your journey is lighting up the world one country at a time.";
+    }
 
-// Add to container
-mapContainer.appendChild(header);
-mapContainer.appendChild(message);
+    // Add to container
+    mapContainer.appendChild(header);
+    mapContainer.appendChild(message);
 
     const mapDiv = document.createElement("div");
     mapDiv.id = "mapInner";
@@ -1612,9 +1612,8 @@ async function getCountryInfo(): Promise<void> {
     totalWorldCountries = result.length;
 
     renderCountryCards(result, (country: Country) => {
-        return () => {
-            const countryName = encodeURIComponent(country.name.common);
-            window.open(`info.html?country=${countryName}`, "_blank");
+        return async () => {
+            await navigateToCountryDetail(country.name.common);
         };
     });
 
