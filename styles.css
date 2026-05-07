@@ -209,6 +209,13 @@ button {
     color: var(--bs-body-color);
 }
 
+.visited-toggle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+}
+
 .memory-thumb {
     width: 100%;
     height: 160px;
