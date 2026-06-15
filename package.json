@@ -1,8 +1,8 @@
 {
-  "name": "project_htmlcssjavascript",
+  "name": "rest-countries-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A TypeScript country explorer and travel tracker.",
+  "private": true,
   "scripts": {
     "build": "tsc",
     "test": "npm run build && node --test",
@@ -10,18 +10,21 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HireFabiola/Project_HtmlCSSJavaScript.git"
+    "url": "git+https://github.com/HireFabiola/REST_Countries_API.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "countries",
+    "typescript",
+    "frontend-mentor"
+  ],
+  "author": "Fabiola Aurelien",
   "license": "ISC",
   "type": "module",
   "bugs": {
-    "url": "https://github.com/HireFabiola/Project_HtmlCSSJavaScript/issues"
+    "url": "https://github.com/HireFabiola/REST_Countries_API/issues"
   },
-  "homepage": "https://github.com/HireFabiola/Project_HtmlCSSJavaScript#readme",
+  "homepage": "https://hirefabiola.github.io/REST_Countries_API/",
   "devDependencies": {
-    "@types/node": "^25.5.2",
     "typescript": "^6.0.2"
   }
 }

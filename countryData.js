@@ -20,4 +20,3 @@ export function getNativeName(country) {
         : [];
     return nativeNames[0]?.common ?? country.name.official;
 }
-//# sourceMappingURL=countryData.js.map

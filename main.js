@@ -1252,4 +1252,3 @@ getCountryInfo().catch((error) => {
     showErrorMessage("Country data could not be loaded. Please refresh and try again.");
 });
 renderVisitedFilter();
-//# sourceMappingURL=main.js.map
