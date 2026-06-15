@@ -1,4 +1,12 @@
 
+import {
+    type Country,
+    findCountryByName,
+    getNativeName,
+    normalizeCountryValue,
+    searchCountries
+} from "./countryData.js";
+
 // =================================================================================
 //                                  DOM REFERENCES
 // =================================================================================
@@ -49,35 +57,11 @@ const authModal = document.getElementById("authModal") as HTMLElement | null;
 let totalWorldCountries: number = 0;
 let visitedMap: any = null;
 
-// Adding cache for world map real load optimization
+// REST Countries v3.1 was deprecated in June 2026, so the app uses a local
+// snapshot of its open-source dataset instead of exposing a v5 API key.
+const COUNTRY_DATA_URL = "./data/countries.json";
 let cachedCountries: Country[] | null = null;
-// =================================================================================
-//                                  DATA TYPES
-// =================================================================================
-
-// Country data from REST Countries API
-interface Country {
-    cca2: string;
-    name: {
-        common: string;
-        official: string;
-    };
-    capital?: string[];
-    region: string;
-    subregion?: string;
-    population: number;
-    flags: {
-        svg: string;
-    };
-    tld?: string[];
-    currencies?: Record<string, {
-        name: string;
-        symbol?: string;
-    }>;
-    languages?: Record<string, string>;
-    borders?: string[];
-}
-
+let countryDataPromise: Promise<Country[]> | null = null;
 // Registered user stored in localStorage
 type RegisteredUser = {
     name: string;
@@ -105,6 +89,35 @@ function getCountryFlagsContainer(): HTMLElement | null {
 // Clear all existing content from a container
 function clearContainer(container: HTMLElement): void {
     container.innerHTML = "";
+}
+
+async function loadCountries(): Promise<Country[]> {
+    if (cachedCountries) {
+        return cachedCountries;
+    }
+
+    if (!countryDataPromise) {
+        countryDataPromise = fetch(COUNTRY_DATA_URL)
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw new Error(`Unable to load country data (${response.status})`);
+                }
+
+                const countries: unknown = await response.json();
+                if (!Array.isArray(countries)) {
+                    throw new Error("Country data has an unexpected format");
+                }
+
+                cachedCountries = countries as Country[];
+                return cachedCountries;
+            })
+            .catch((error) => {
+                countryDataPromise = null;
+                throw error;
+            });
+    }
+
+    return countryDataPromise;
 }
 
 // Display a success or error message inside a target element
@@ -644,9 +657,8 @@ function showVisitedCountries(): void {
         return;
     }
 
-    // Fetch all countries to get the visited ones
-    fetch("https://restcountries.com/v3.1/all?fields=name,capital,region,population,flags")
-        .then(response => response.json())
+    // Load all countries to get the visited ones
+    loadCountries()
         .then((countries: Country[]) => {
             const visitedCountries = countries.filter(country =>
                 visitedNames.includes(country.name.common)
@@ -888,16 +900,7 @@ searchInput?.addEventListener("input", () => {
 
     searchTimeout = window.setTimeout(async () => {
         try {
-            const response = await fetch(
-                `https://restcountries.com/v3.1/name/${encodeURIComponent(query)}?fields=name,flags,cca2`
-            );
-
-            if (!response.ok) {
-                suggestionsBox.innerHTML = "";
-                return;
-            }
-
-            const countries: Country[] = await response.json();
+            const countries = searchCountries(await loadCountries(), query);
 
             suggestionsBox.innerHTML = "";
 
@@ -1302,7 +1305,7 @@ function createTopLeftDetails(searchedCountry: Country): HTMLDivElement {
     countryName.textContent = searchedCountry.name.common;
 
     const nativeName = document.createElement("p");
-    nativeName.textContent = `Native Name: ${searchedCountry.name.official}`;
+    nativeName.textContent = `Native Name: ${getNativeName(searchedCountry)}`;
 
     const population = document.createElement("p");
     population.textContent = `Population: ${searchedCountry.population.toLocaleString()}`;
@@ -1379,13 +1382,10 @@ async function renderBorderCountries(
     borderWrap: HTMLDivElement
 ): Promise<void> {
     if (searchedCountry.borders && searchedCountry.borders.length > 0) {
-        const codes = searchedCountry.borders.join(",");
-
-        const borderResponse = await fetch(
-            `https://restcountries.com/v3.1/alpha?codes=${codes}&fields=name`
+        const borderCodes = new Set(searchedCountry.borders);
+        const borderData = (await loadCountries()).filter((country) =>
+            borderCodes.has(country.cca3)
         );
-
-        const borderData: { name: { common: string } }[] = await borderResponse.json();
 
         borderData.forEach((country) => {
             const borderItem = createBorderCountryButton(country);
@@ -1477,12 +1477,7 @@ async function showBorderCountryHover(
     removeHoverCard();
 
     try {
-        const response = await fetch(
-            `https://restcountries.com/v3.1/name/${encodeURIComponent(countryName)}?fields=name,capital,region,population,flags`
-        );
-
-        const result: Country[] = await response.json();
-        const country = result[0];
+        const country = findCountryByName(await loadCountries(), countryName);
 
         if (!country) return;
 
@@ -1560,11 +1555,9 @@ async function handleChange(event: Event): Promise<void> {
         return;
     }
 
-    const response = await fetch(
-        `https://restcountries.com/v3.1/region/${selectedRegion}`
+    const result = (await loadCountries()).filter((country) =>
+        normalizeCountryValue(country.region) === normalizeCountryValue(selectedRegion)
     );
-
-    const result: Country[] = await response.json();
 
     renderCountryCards(result, (country: Country) => {
         return async () => {
@@ -1597,17 +1590,7 @@ async function handleSubmit(event: Event): Promise<void> {
 async function getCountryInfo(): Promise<void> {
     console.log("STEP 1: getCountryInfo started");
 
-    let result: Country[];
-
-    if (cachedCountries) {
-        result = cachedCountries;
-    } else {
-        const response = await fetch(
-            "https://restcountries.com/v3.1/all?fields=name,capital,region,population,flags,cca2"
-        );
-        result = await response.json();
-        cachedCountries = result;
-    }
+    const result = await loadCountries();
 
     totalWorldCountries = result.length;
 
@@ -1624,21 +1607,16 @@ async function getCountryInfo(): Promise<void> {
 // Fetch a single searched country and render the detail layout
 export async function getSearchCountry(name: string): Promise<void> {
     try {
-        const response = await fetch(
-            `https://restcountries.com/v3.1/name/${name}?fields=name,nativeName,capital,region,subregion,population,flags,tld,currencies,languages,borders`
-        );
-
-        if (!response.ok) {
-            throw new Error("Country not found");
-        }
-
-        const result: Country[] = await response.json();
-        const searchedCountry: Country | undefined = result[0];
+        const searchedCountry = findCountryByName(await loadCountries(), name);
 
         const homePage = document.getElementById("onLoadLayout");
         const newPage = document.getElementById("newLayout");
 
-        if (!homePage || !newPage || !searchedCountry) return;
+        if (!searchedCountry) {
+            throw new Error("Country not found");
+        }
+
+        if (!homePage || !newPage) return;
 
         homePage.classList.add("d-none");
         newPage.classList.remove("d-none");
@@ -1699,5 +1677,8 @@ searchForm?.addEventListener("submit", handleSubmit);
 // Initialize app state
 initAuth();
 updateSearchPlaceholder();
-getCountryInfo();
+getCountryInfo().catch((error) => {
+    console.error("Country data error:", error);
+    showErrorMessage("Country data could not be loaded. Please refresh and try again.");
+});
 renderVisitedFilter();
