@@ -26,6 +26,14 @@ Mobile-first workflow
 TypeScript
 Styled Components
 
+Country Data
+REST Countries deprecated the unauthenticated v3.1 API in June 2026. Because
+this is a static browser application and v5 API keys must not be committed to
+client-side code, the app now uses a local snapshot of the project's
+[open-source v3.1 dataset](https://gitlab.com/restcountries/restcountries/-/blob/master/src/main/resources/countriesV3.1.json).
+Searches, region filters, and border-country lookups run against that cached
+snapshot in the browser.
+
 What I Learned
 This project allowed me to deepen my understanding in several key areas. I gained hands-on experience working with API data, learning how to manage it effectively through structured error handling with try-catch blocks. I also strengthened my proficiency in TypeScript, using it to introduce greater structure, catch errors earlier, and more confidently interpret compiler feedback during debugging.
 In addition, I developed dynamic routing elements through DOM manipulation and began to appreciate the value of modularized code in building scalable and maintainable applications. While my implementation is not a perfect example of well-modularized code, the experience made it clear how much cleaner and more manageable the project would have been with stronger modularization from the start. Without taking the time to at least reorganize the code with clear sections and headers, it would have been far more difficult to read and follow.
