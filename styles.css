@@ -270,10 +270,53 @@ button {
   position: relative;
 }
 
+.logo img {
+  display: block;
+  width: min(200px, 45vw);
+  height: auto;
+}
+
 .travel-counter {
   position: absolute;
   left: 50%;
   top: 4rem;
   transform: translateX(-50%);
   text-align: center;
+}
+
+@media (max-width: 767.98px) {
+  header .container {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+
+  .header-layout {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .logo img {
+    width: min(180px, 70vw);
+    max-height: 120px;
+    object-fit: contain;
+  }
+
+  .travel-counter {
+    position: static;
+    transform: none;
+    max-width: 100%;
+    font-size: 0.9rem;
+  }
+
+  .header-controls {
+    align-items: center;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .header-controls > .d-flex {
+    justify-content: center !important;
+  }
 }
